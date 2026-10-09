@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b1a12">
+<meta name="description" content="The Verdant Knight — an offline-first naturalist RPG. Touch grass, level up.">
+<title>THE VERDANT KNIGHT: CHRONICLES OF THE REALM</title>
+<style>
+:root{
+  --bg:#0b1a12; --bg2:#10241a; --bg3:#16301f;
+  --gold:#c9a227; --gold-hi:#f2d060; --gold-dk:#7a6114;
+  --green:#4caf50; --green-hi:#7de081; --green-dk:#1f4d2a;
+  --ink:#e8e3d3; --ink-dim:#a8a38f;
+  --panel:#0f2016; --panel2:#132a1c;
+  --font-head: Georgia,'Times New Roman',serif;
+  --font-body: 'Courier New',Courier,monospace;
+  --sat: env(safe-area-inset-top,0px);
+  --sab: env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  background:
+    radial-gradient(1200px 600px at 50% -10%, #1a3a26 0%, transparent 60%),
+    radial-gradient(900px 500px at 90% 110%, #14281c 0%, transparent 55%),
+    linear-gradient(180deg,var(--bg) 0%, #08120c 100%);
+  color:var(--ink); font-family:var(--font-body); overflow-x:hidden;
+  min-height:100dvh;
+}
+body::after{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:9990;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,.14) 0 1px, transparent 1px 3px);
+  mix-blend-mode:multiply;
+}
+canvas.pix{image-rendering:pixelated; image-rendering:crisp-edges;}
+.hidden{display:none !important;}
+
+/* ---------- screens ---------- */
+.screen{min-height:100dvh; display:flex; flex-direction:column; align-items:center; padding:calc(16px + var(--sat)) 14px calc(96px + var(--sab)); position:relative; z-index:1;}
+#scr-title{justify-content:center; text-align:center;}
+#scr-game{padding-bottom:calc(86px + var(--sab));}
+
+/* ---------- panels ---------- */
+.panel{
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:3px solid var(--gold); border-radius:8px;
+  box-shadow:0 0 0 2px #08120c, 0 0 22px rgba(201,162,39,.18), inset 0 0 30px rgba(0,0,0,.5);
+  padding:16px; width:100%; max-width:960px;
+}
+.panel h2, .panel h3{font-family:var(--font-head); color:var(--gold-hi); letter-spacing:1px;}
+.rune-title{
+  font-family:var(--font-head); font-weight:bold; color:var(--gold-hi);
+  text-shadow:0 0 12px rgba(201,162,39,.55), 0 2px 0 #000;
+  letter-spacing:2px;
+}
+
+/* ---------- title screen ---------- */
+.game-title{font-size:clamp(1.7rem,6.4vw,3.6rem); line-height:1.12; margin:14px 0 4px; animation:glowPulse 3s ease-in-out infinite;}
+.game-sub{color:var(--green-hi); font-size:clamp(.8rem,2.6vw,1.05rem); letter-spacing:3px; margin-bottom:6px;}
+.game-tag{color:var(--ink-dim); font-size:.8rem; margin:10px 0 26px; max-width:520px;}
+@keyframes glowPulse{0%,100%{text-shadow:0 0 10px rgba(201,162,39,.5),0 2px 0 #000;}50%{text-shadow:0 0 26px rgba(242,208,96,.9),0 2px 0 #000;}}
+.title-emblem{width:120px;height:128px; filter:drop-shadow(0 0 14px rgba(76,175,80,.6));}
+.title-leaves{position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0;}
+.leaf{position:absolute; top:-30px; font-size:18px; opacity:.7; animation:fall linear infinite;}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);}}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  min-height:48px; padding:12px 22px; font-family:var(--font-body); font-weight:bold;
+  font-size:1rem; letter-spacing:1px; color:var(--gold-hi); cursor:pointer;
+  background:linear-gradient(180deg,#2a1f08,#171204);
+  border:3px solid var(--gold); border-radius:6px;
+  box-shadow:0 4px 0 var(--gold-dk), 0 6px 10px rgba(0,0,0,.6), inset 0 1px 0 rgba(242,208,96,.35);
+  text-transform:uppercase; transition:transform .05s, box-shadow .05s, filter .15s;
+  touch-action:manipulation; user-select:none;
+}
+.btn:active{transform:translateY(3px); box-shadow:0 1px 0 var(--gold-dk), 0 2px 6px rgba(0,0,0,.6);}
+.btn:disabled{filter:grayscale(.9) brightness(.6); cursor:not-allowed;}
+.btn.green{color:#dfffe2; background:linear-gradient(180deg,#1d4d28,#0e2a15); border-color:var(--green); box-shadow:0 4px 0 #12381d, 0 6px 10px rgba(0,0,0,.6), inset 0 1px 0 rgba(125,224,129,.35);}
+.btn.ghost{background:transparent; box-shadow:none; border-color:#3a5a44; color:var(--ink-dim);}
+.btn.small{min-height:44px; padding:8px 14px; font-size:.85rem;}
+.btn.block{width:100%;}
+
+/* ---------- forms ---------- */
+label.lbl{display:block; color:var(--green-hi); font-size:.8rem; letter-spacing:2px; text-transform:uppercase; margin:16px 0 8px;}
+input[type=text]{
+  width:100%; min-height:48px; padding:10px 14px; font-family:var(--font-body); font-size:1.05rem;
+  background:#08130c; color:var(--ink); border:2px solid var(--green-dk); border-radius:6px; outline:none;
+}
+input[type=text]:focus{border-color:var(--gold);}
+.pill-row{display:flex; flex-wrap:wrap; gap:8px;}
+.pill{
+  min-height:44px; padding:10px 16px; border:2px solid #3a5a44; border-radius:24px; background:#0d1f13;
+  color:var(--ink-dim); font-family:var(--font-body); font-weight:bold; cursor:pointer; font-size:.9rem;
+}
+.pill.sel{border-color:var(--gold); color:var(--gold-hi); background:#221a06; box-shadow:0 0 10px rgba(201,162,39,.35);}
+
+/* class cards */
+.class-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px;}
+.class-card{
+  border:2px solid #3a5a44; border-radius:8px; padding:12px; background:#0d1f13; cursor:pointer;
+  transition:border-color .15s, box-shadow .15s; text-align:left; color:var(--ink); font-family:var(--font-body);
+  min-height:120px;
+}
+.class-card.sel{border-color:var(--gold); box-shadow:0 0 14px rgba(201,162,39,.4); background:#1a1405;}
+.class-card .cname{font-family:var(--font-head); font-weight:bold; font-size:1rem; margin-bottom:4px;}
+.class-card .cbonus{color:var(--gold-hi); font-size:.8rem; font-weight:bold;}
+.class-card .cdesc{color:var(--ink-dim); font-size:.72rem; margin-top:6px; line-height:1.45;}
+
+/* avatar customizer */
+.avatar-wrap{display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;}
+.avatar-frame{
+  border:3px solid var(--gold); border-radius:8px; background:
+    radial-gradient(circle at 50% 30%, #1c3a26 0%, #0a140d 75%);
+  padding:10px; box-shadow:inset 0 0 24px rgba(0,0,0,.7);
+}
+.avatar-frame canvas{display:block; width:144px; height:192px;}
+.sw-row{display:flex; flex-wrap:wrap; gap:8px;}
+.sw{width:44px; height:44px; border-radius:8px; border:3px solid #3a5a44; cursor:pointer; padding:0;}
+.sw.sel{border-color:var(--gold-hi); box-shadow:0 0 10px rgba(242,208,96,.6);}
+.sw.txt{width:auto; min-width:44px; padding:0 12px; color:var(--ink); background:#0d1f13; font-family:var(--font-body); font-weight:bold; font-size:.78rem; display:inline-flex; align-items:center; justify-content:center;}
+.sw.txt.sel{color:var(--gold-hi); background:#221a06;}
+
+/* ---------- game header ---------- */
+#game-head{width:100%; max-width:960px; display:flex; align-items:center; gap:12px; padding:10px 12px; margin-bottom:12px;}
+#game-head .mini{width:52px; height:66px; border:2px solid var(--gold); border-radius:6px; background:#0a140d; flex:none;}
+#game-head .mini canvas{width:100%; height:100%;}
+#game-head .who{flex:1; min-width:0;}
+#game-head .who .nm{font-family:var(--font-head); color:var(--gold-hi); font-weight:bold; font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+#game-head .who .cl{color:var(--green-hi); font-size:.75rem;}
+#game-head .who .lvl{color:var(--ink-dim); font-size:.72rem;}
+.icon-btn{width:48px; height:48px; border:2px solid var(--gold); border-radius:8px; background:#171204; color:var(--gold-hi); font-size:1.2rem; cursor:pointer; flex:none;}
+
+/* ---------- tab nav ---------- */
+#tabnav{
+  position:fixed; left:0; right:0; bottom:0; z-index:50;
+  display:flex; background:linear-gradient(180deg,#10241a,#08120c);
+  border-top:3px solid var(--gold); padding:6px 6px calc(6px + var(--sab));
+}
+#tabnav button{
+  flex:1; min-height:56px; background:none; border:none; color:var(--ink-dim);
+  font-family:var(--font-body); font-size:.62rem; font-weight:bold; letter-spacing:.5px; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; border-radius:8px;
+}
+#tabnav button .ic{font-size:1.25rem; filter:grayscale(.6);}
+#tabnav button.sel{color:var(--gold-hi); background:rgba(201,162,39,.12);}
+#tabnav button.sel .ic{filter:none; transform:scale(1.12);}
+.tab-page{width:100%; max-width:960px;}
+
+/* ---------- trail mode ---------- */
+.trail-hero{display:flex; flex-direction:column; align-items:center; gap:14px; padding:18px 10px;}
+#harvestBtn{
+  width:min(72vw,300px); aspect-ratio:1; border-radius:50%; cursor:pointer;
+  font-family:var(--font-head); font-size:clamp(1.1rem,4.5vw,1.5rem); font-weight:bold; color:#08120c;
+  background:radial-gradient(circle at 35% 30%, var(--gold-hi), var(--gold) 55%, var(--gold-dk));
+  border:6px solid #f5e3a0; box-shadow:0 0 0 4px var(--gold-dk), 0 0 40px rgba(242,208,96,.55), 0 12px 24px rgba(0,0,0,.7), inset 0 -10px 24px rgba(0,0,0,.3);
+  animation:harvestPulse 2.4s ease-in-out infinite; text-transform:uppercase; letter-spacing:1px; line-height:1.25;
+  touch-action:manipulation;
+}
+#harvestBtn:active{transform:scale(.96);}
+@keyframes harvestPulse{0%,100%{box-shadow:0 0 0 4px var(--gold-dk),0 0 26px rgba(242,208,96,.4),0 12px 24px rgba(0,0,0,.7);}50%{box-shadow:0 0 0 6px var(--gold-hi),0 0 56px rgba(242,208,96,.85),0 12px 24px rgba(0,0,0,.7);}}
+.trail-hint{color:var(--ink-dim); font-size:.78rem; text-align:center; max-width:420px; line-height:1.5;}
+.el-bars{display:grid; gap:8px; margin-top:8px;}
+.el-bar{display:grid; grid-template-columns:34px 1fr 62px; align-items:center; gap:8px; font-size:.72rem;}
+.el-bar .ic{width:30px; height:30px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1rem; border:2px solid rgba(255,255,255,.15);}
+.bar{height:14px; background:#08130c; border:2px solid #2c4636; border-radius:7px; overflow:hidden; position:relative;}
+.bar > i{display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--c,#4caf50),#fff8); transition:width .5s ease;}
+.bar.big{height:20px; border-radius:10px;}
+.bar .txt{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:.66rem; font-weight:bold; color:#fff; text-shadow:0 1px 2px #000;}
+
+/* ---------- stat table / gear / codex / quests ---------- */
+.stat-grid{display:grid; gap:8px;}
+.stat-row{display:grid; grid-template-columns:34px 1fr auto; gap:10px; align-items:center; background:#0d1f13; border:2px solid #23402f; border-radius:8px; padding:8px 10px;}
+.stat-row .v{font-family:var(--font-head); font-weight:bold; color:var(--gold-hi); font-size:1.15rem; min-width:44px; text-align:right;}
+.stat-row .sub{color:var(--ink-dim); font-size:.68rem;}
+.alloc-btns{display:flex; gap:6px;}
+.alloc-btns button{width:44px; height:44px; font-size:1.2rem; font-weight:bold; border-radius:8px; border:2px solid var(--gold); background:#171204; color:var(--gold-hi); cursor:pointer;}
+.gear-row{background:#0d1f13; border:2px solid #23402f; border-radius:8px; padding:10px; margin-bottom:10px;}
+.gear-row h4{font-family:var(--font-head); font-size:.95rem; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;}
+.tier-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+.tier{
+  border:2px solid #2c4636; border-radius:8px; padding:8px 6px; text-align:center; font-size:.66rem; color:var(--ink-dim);
+  background:#08130c; min-height:86px; display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer;
+}
+.tier .gi{font-size:1.5rem; filter:grayscale(1) brightness(.55);}
+.tier.unlocked{color:var(--ink); border-color:var(--green);}
+.tier.unlocked .gi{filter:none;}
+.tier.equipped{border-color:var(--gold-hi); box-shadow:0 0 10px rgba(242,208,96,.4); color:var(--gold-hi);}
+.tier .lock{font-size:.6rem; color:#5a6a5e;}
+.codex-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(108px,1fr)); gap:10px;}
+.codex-card{border:2px solid #2c4636; border-radius:8px; background:#0d1f13; overflow:hidden; font-size:.62rem;}
+.codex-card img{width:100%; aspect-ratio:1; object-fit:cover; display:block; image-rendering:auto; background:#08130c;}
+.codex-card .cc-body{padding:6px;}
+.codex-card .cc-name{font-weight:bold; color:var(--ink); font-size:.68rem; line-height:1.2; min-height:2.2em;}
+.codex-card.rar-uncommon{border-color:var(--green);}
+.codex-card.rar-rare{border-color:#3d7ea6; box-shadow:0 0 8px rgba(61,126,166,.4);}
+.codex-card.rar-legendary{border-color:var(--gold-hi); box-shadow:0 0 12px rgba(242,208,96,.55);}
+.quest{background:#0d1f13; border:2px solid #23402f; border-radius:8px; padding:10px 12px; margin-bottom:8px; display:flex; gap:10px; align-items:center;}
+.quest.done{border-color:var(--green);}
+.quest.claimed{opacity:.55;}
+.quest .q-body{flex:1;}
+.quest .q-name{font-weight:bold; font-size:.85rem; color:var(--gold-hi);}
+.quest .q-desc{font-size:.7rem; color:var(--ink-dim); margin:2px 0 6px;}
+.empty-note{color:var(--ink-dim); font-size:.78rem; text-align:center; padding:24px 10px; line-height:1.6;}
+
+/* ---------- modal / toast ---------- */
+#modalWrap{position:fixed; inset:0; z-index:200; background:rgba(4,10,6,.82); display:flex; align-items:center; justify-content:center; padding:16px; backdrop-filter:blur(2px);}
+.modal{width:100%; max-width:460px; max-height:88dvh; overflow-y:auto;}
+.find-card{text-align:center;}
+.find-thumb{width:128px; height:128px; object-fit:cover; border:3px solid var(--gold); border-radius:10px; margin:6px auto; display:block; background:#08130c;}
+.rarity{font-size:.72rem; letter-spacing:2px; text-transform:uppercase; font-weight:bold;}
+.rar-common{color:#b9c2b9;} .rar-uncommon{color:var(--green-hi);} .rar-rare{color:#6db3e8;} .rar-legendary{color:var(--gold-hi); animation:glowPulse 1.6s infinite;}
+#toastWrap{position:fixed; top:calc(10px + var(--sat)); left:50%; transform:translateX(-50%); z-index:300; display:flex; flex-direction:column; gap:8px; width:min(92vw,420px); pointer-events:none;}
+.toast{
+  background:linear-gradient(180deg,#1a1405,#0d0902); border:2px solid var(--gold); border-radius:8px; padding:10px 14px;
+  color:var(--gold-hi); font-size:.78rem; font-weight:bold; text-align:center; box-shadow:0 6px 18px rgba(0,0,0,.7);
+  animation:toastIn .3s ease, toastOut .4s ease 3.4s forwards;
+}
+@keyframes toastIn{from{opacity:0; transform:translateY(-14px);}to{opacity:1; transform:none;}}
+@keyframes toastOut{to{opacity:0; transform:translateY(-14px);}}
+
+/* ---------- reveal scan anim ---------- */
+.scanning{position:relative; overflow:hidden;}
+.scanning::before{content:""; position:absolute; left:0; right:0; height:4px; background:var(--green-hi); box-shadow:0 0 18px var(--green-hi); animation:scan 1s linear infinite; z-index:5;}
+@keyframes scan{0%{top:0;}100%{top:100%;}}
+
+#fx{position:fixed; inset:0; z-index:400; pointer-events:none;}
+
+.footer-note{color:#4a5a4e; font-size:.62rem; text-align:center; margin-top:18px; line-height:1.6;}
+
+@media (min-width:1024px){
+  .avatar-frame canvas{width:192px; height:256px;}
+  #tabnav{max-width:960px; left:50%; transform:translateX(-50%); border:3px solid var(--gold); border-bottom:none; border-radius:12px 12px 0 0;}
+}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div id="toastWrap" aria-live="polite"></div>
+
+<!-- ===================== TITLE ===================== -->
+<section id="scr-title" class="screen">
+  <div class="title-leaves" id="titleLeaves"></div>
+  <canvas id="titleEmblem" class="title-emblem pix" width="24" height="26"></canvas>
+  <div class="game-sub">HACKTOBERFEST · TOUCH GRASS CHALLENGE</div>
+  <h1 class="game-title rune-title">THE VERDANT KNIGHT</h1>
+  <div class="rune-title" style="font-size:clamp(.9rem,3vw,1.4rem);">CHRONICLES OF THE REALM</div>
+  <p class="game-tag">An offline-first naturalist RPG. Step outside. Photograph the wild. Grow strong on bark, leaf, stone, bloom and spore. No servers. No accounts. Only grass.</p>
+  <div style="display:flex; flex-direction:column; gap:12px; width:min(84vw,320px);">
+    <button class="btn green block" id="btnContinue">⚔ Continue Chronicle</button>
+    <button class="btn block" id="btnNew">🌱 New Chronicle</button>
+  </div>
+  <p class="footer-note">100% offline · Powered by on-device open-weight AI (WebGPU)<br>Est. Realm Build v1.0 — “Touch Grass” Edition</p>
+</section>
+
+<!-- ===================== CHARACTER CREATION ===================== -->
+<section id="scr-create" class="screen hidden">
+  <div class="panel">
+    <h2 class="rune-title" style="font-size:1.3rem;">⚜ FORGE YOUR KNIGHT</h2>
+    <p style="color:var(--ink-dim); font-size:.78rem; margin-top:6px;">Every legend begins with a name spoken to the trees.</p>
+
+    <label class="lbl" for="inpName">Character Name</label>
+    <input type="text" id="inpName" maxlength="18" placeholder="e.g. Rowan Thorncroft" autocomplete="off">
+
+    <label class="lbl">Pronouns / Identity</label>
+    <div class="pill-row" id="pronounRow">
+      <button class="pill" data-p="He/Him">He / Him</button>
+      <button class="pill" data-p="She/Her">She / Her</button>
+      <button class="pill" data-p="They/Them">They / Them</button>
+      <button class="pill" data-p="Wayfarer">Wayfarer</button>
+    </div>
+
+    <label class="lbl">Starting Class Archetype</label>
+    <div class="class-grid" id="classGrid"></div>
+
+    <label class="lbl">Visage of the Wild (Avatar)</label>
+    <div class="avatar-wrap">
+      <div class="avatar-frame"><canvas id="createAvatar" class="pix" width="24" height="32"></canvas></div>
+      <div style="flex:1; min-width:240px;">
+        <label class="lbl" style="margin-top:0;">Skin Tone</label>
+        <div class="sw-row" id="skinRow"></div>
+        <label class="lbl">Hairstyle</label>
+        <div class="sw-row" id="hairRow"></div>
+        <label class="lbl">Hair Color</label>
+        <div class="sw-row" id="hairColorRow"></div>
+        <label class="lbl">War Paint / Trail Markings</label>
+        <div class="sw-row" id="paintRow"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px; display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="btn green" id="btnBegin" style="flex:1; min-width:200px;">🌿 Begin the Chronicle</button>
+      <button class="btn ghost" id="btnBackTitle">Back</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MAIN GAME ===================== -->
+<section id="scr-game" class="screen hidden">
+  <div id="game-head" class="panel">
+    <div class="mini"><canvas id="headAvatar" class="pix" width="24" height="32"></canvas></div>
+    <div class="who">
+      <div class="nm" id="headName">—</div>
+      <div class="cl" id="headClass">—</div>
+      <div class="lvl" id="headLevel">—</div>
+    </div>
+    <button class="icon-btn" id="btnMute" title="Toggle sound">🔊</button>
+    <button class="icon-btn" id="btnReset" title="Reset save">⟲</button>
+  </div>
+
+  <!-- TRAIL -->
+  <div class="tab-page" id="tab-trail">
+    <div class="panel trail-hero">
+      <h2 class="rune-title" style="font-size:1.15rem;">🌲 TRAIL MODE</h2>
+      <button id="harvestBtn" aria-label="Harvest specimen with camera">HARVEST<br>SPECIMEN</button>
+      <input type="file" id="fileInput" accept="image/*" capture="environment" class="hidden">
+      <div id="scanZone" class="hidden" style="width:min(72vw,300px);">
+        <div class="scanning panel" style="padding:26px; text-align:center; color:var(--green-hi); font-size:.8rem;">
+          ANALYZING SPECIMEN VIA LOCAL AI<span id="scanDots">…</span>
+        </div>
+      </div>
+      <button class="btn ghost small" id="btnForage">🍂 No camera? Forage nearby (offline)</button>
+      <p class="trail-hint">Point your camera at bark, leaves, stones, flowers or fungi. The open-weight vision model processes your photo on-device and attunes the find to one of the five natural elements.</p>
+    </div>
+    <div class="panel" style="margin-top:12px;">
+      <h3 style="font-size:1rem; margin-bottom:8px;">Elemental Attunement</h3>
+      <div class="el-bars" id="elBars"></div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="tab-page hidden" id="tab-hero">
+    <div class="panel">
+      <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start;">
+        <div class="avatar-frame"><canvas id="heroAvatar" class="pix" width="24" height="32"></canvas></div>
+        <div style="flex:1; min-width:220px;">
+          <h2 class="rune-title" id="heroName" style="font-size:1.2rem;">—</h2>
+          <div style="color:var(--green-hi); font-size:.8rem;" id="heroTitle">—</div>
+          <div style="color:var(--ink-dim); font-size:.72rem; margin-top:6px;" id="heroMeta">—</div>
+          <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
+            <button class="btn small green" id="btnAlloc">✦ Allocate Points <span id="allocBadge"></span></button>
+          </div>
+        </div>
+      </div>
+      <label class="lbl">The Five Elements</label>
+      <div class="stat-grid" id="statGrid"></div>
+    </div>
+    <div class="panel" style="margin-top:12px;">
+      <h3 style="font-size:1rem;">Chronicle Deeds</h3>
+      <div id="deedList" style="font-size:.75rem; color:var(--ink-dim); line-height:1.9; margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <!-- GEAR -->
+  <div class="tab-page hidden" id="tab-gear">
+    <div class="panel">
+      <h2 class="rune-title" style="font-size:1.15rem;">🛡 GEAR OF THE WILD</h2>
+      <p style="color:var(--ink-dim); font-size:.75rem; margin:6px 0 12px;">Gear is unlocked by leveling each element (Tier I at Lv 2 · Tier II at Lv 4 · Tier III at Lv 7). Tap an unlocked tier to equip it — your avatar wears what you choose. Each equipped tier grants <b style="color:var(--gold-hi)">+4</b> to its stat.</p>
+      <div id="gearList"></div>
+    </div>
+  </div>
+
+  <!-- CODEX -->
+  <div class="tab-page hidden" id="tab-codex">
+    <div class="panel">
+      <h2 class="rune-title" style="font-size:1.15rem;">📖 FIELD CODEX</h2>
+      <p style="color:var(--ink-dim); font-size:.75rem; margin:6px 0 12px;" id="codexCount"></p>
+      <div class="codex-grid" id="codexGrid"></div>
+      <div class="empty-note" id="codexEmpty">No specimens logged yet.<br>Enter Trail Mode and harvest your first find.</div>
+    </div>
+  </div>
+
+  <!-- QUESTS -->
+  <div class="tab-page hidden" id="tab-quests">
+    <div class="panel">
+      <h2 class="rune-title" style="font-size:1.15rem;">📜 QUESTS OF THE REALM</h2>
+      <div id="questList" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <nav id="tabnav">
+    <button data-tab="trail" class="sel"><span class="ic">🌲</span>TRAIL</button>
+    <button data-tab="hero"><span class="ic">🧝</span>HERO</button>
+    <button data-tab="gear"><span class="ic">🛡</span>GEAR</button>
+    <button data-tab="codex"><span class="ic">📖</span>CODEX</button>
+    <button data-tab="quests"><span class="ic">📜</span>QUESTS</button>
+  </nav>
+</section>
+
+<!-- ===================== MODAL ===================== -->
+<div id="modalWrap" class="hidden"><div class="modal panel" id="modalBox"></div></div>
+
+<script type="module">
+'use strict';
+/* ============================================================
+   THE VERDANT KNIGHT: CHRONICLES OF THE REALM
+   Naturalist RPG powered by Transformers.js (WebGPU)
+   ============================================================ */
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0';
+
+env.allowLocalModels = false;
+
+/* ---------------- Open-Weight AI Vision Pipeline ---------------- */
+let aiClassifier = null;
+let aiStatus = 'idle';
+
+async function initVisionAI() {
+  if (aiClassifier || aiStatus === 'loading') return;
+  aiStatus = 'loading';
+  try {
+    aiClassifier = await pipeline(
+      'image-classification',
+      'onnx-community/mobilenetv4_conv_small.e2400_r224_in1k',
+      { device: 'webgpu' }
+    );
+    aiStatus = 'ready';
+    toast('🧠 <b>Open-weight Vision AI loaded!</b> (MobileNetV4 WebGPU ready)');
+  } catch (err) {
+    try {
+      aiClassifier = await pipeline(
+        'image-classification',
+        'onnx-community/mobilenetv4_conv_small.e2400_r224_in1k',
+        { device: 'wasm' }
+      );
+      aiStatus = 'ready';
+      toast('🧠 <b>Vision AI loaded via WASM!</b>');
+    } catch (e) {
+      aiStatus = 'error';
+    }
+  }
+}
+initVisionAI();
+
+/* ---------------- Data ---------------- */
+const ELEMENTS = {
+  bark:   { key:'bark',   name:'Bark & Timber',       stat:'DEF', icon:'🌳', color:'#b07a3e',
+            gear:['Bark Greaves','Ironwood Cuirass','Ancient Sylvan Plate'], gicon:['🥾','🪵','🛡'],
+            pre:['Gnarled','Ironbark','Mossback','Split-Oak','Emberwood','Whorled','Storm-Splintered','Elder'],
+            suf:['Oak Heart','Pine Splinter','Cedar Bark','Root Twist','Timber Knot','Birch Curl','Hollow Log','Acorn Cap'],
+            legend:'Heart of the Old Grove' },
+  leaf:   { key:'leaf',   name:'Foliage & Needles',   stat:'DEX', icon:'🍃', color:'#4caf50',
+            gear:['Leaf Wraps','Briar Hood','Wind-Runner Mantle'], gicon:['🍂','🌿','🧥'],
+            pre:['Whisper','Silver','Dancing','Serrated','Duskwoven','Fleet','Emerald','Sighing'],
+            suf:['Fern','Pine Needle','Ivy Coil','Maple Blade','Nettle Tuft','Clover Sprig','Reed Flute','Willow Wand'],
+            legend:'The Last Leaf of Autumn Eternal' },
+  stone:  { key:'stone',  name:'Stones & Minerals',   stat:'STR', icon:'🪨', color:'#9aa3ad',
+            gear:['Flint Dagger','Basalt Mace','Granite Greatsword'], gicon:['🔪','🔨','🗡'],
+            pre:['Veined','Thunder','River-Worn','Obsidian','Graven','Ironvein','Slumbering','Starfall'],
+            suf:['Flint Shard','Granite Chunk','Quartz Chip','Basalt Core','Pebble Rune','Slate Plate','Geode Heart','Menhir Chip'],
+            legend:'The Mountain’s First Tooth' },
+  bloom:  { key:'bloom',  name:'Flowers & Berries',   stat:'WIS', icon:'🌸', color:'#e06ba7',
+            gear:['Dandelion Charm','Amber Amulet','Bloom-Rune Circlet'], gicon:['🌼','📿','👑'],
+            pre:['Sunfire','Moonpetal','Wild','Crimson','Gilded','Dewkiss','Humming','Twilight'],
+            suf:['Dandelion','Berry Cluster','Foxglove','Thistle Bloom','Clover Crown','Rosehip','Bluebell','Poppy Tear'],
+            legend:'Bloom of the First Morning' },
+  fungus: { key:'fungus', name:'Fungi, Moss & Lichen',stat:'END', icon:'🍄', color:'#8fbf6f',
+            gear:['Lichen Sash','Mycelium Shield','Spore-Mother Aegis'], gicon:['🎗','🛡','⚜'],
+            pre:['Pale','Lantern','Velvet','Ancient','Speckled','Whispercap','Deepwood','Patient'],
+            suf:['Morel','Shelf Fungus','Lichen Rosette','Moss Ball','Puffball','Chanterelle','Turkey Tail','Ink Cap'],
+            legend:'The Spore-Mother’s Own Heart' },
+};
+const EL_KEYS = Object.keys(ELEMENTS);
+const TIER_REQ = [2,4,7];
+const TIER_BONUS = [4,8,12];
+const CLASSES = {
+  oak:    { key:'oak',    name:'Oak Sentinel',  el:'bark',   item:'Bark Shield',    color:'#8a5a2b',
+            desc:'Rooted and unbowed. The forest’s wall. +15 DEF, starts with the Bark Shield.' },
+  wind:   { key:'wind',   name:'Wind Strider',  el:'leaf',   item:'Leaf Cloak',     color:'#4caf50',
+            desc:'Quick as a falling leaf, gone before it lands. +15 DEX, starts with the Leaf Cloak.' },
+  earth:  { key:'earth',  name:'Earth Breaker', el:'stone',  item:'Stone Gauntlet', color:'#9aa3ad',
+            desc:'Speaks softly, carries a mountain. +15 STR, starts with the Stone Gauntlet.' },
+  wild:   { key:'wild',   name:'Wild Mystic',   el:'bloom',  item:'Seed Talisman',  color:'#e06ba7',
+            desc:'Reads omens in petals and berries. +15 WIS, starts with the Seed Talisman.' },
+  marrow: { key:'marrow', name:'Marrow Ward',   el:'fungus', item:'Spore Belt',     color:'#8fbf6f',
+            desc:'Endures what would fell an oak. +15 END, starts with the Spore Belt.' },
+};
+const SKINS  = ['#f6d7b8','#eab98c','#c98d5f','#9c6b43','#6f4a2f','#4a3121'];
+const HAIRS  = ['Braids','Wild Shag','Ponytail','Shorn'];
+const HAIRCOL= ['#241f1c','#5a3a1e','#8c5a2b','#b8860b','#a63d2a','#c9c9c9'];
+const PAINTS = ['None','Mud Smear','Leaf Runic','Ash'];
+const RARITY = [
+  {key:'common',    name:'Common',    w:70, mult:1},
+  {key:'uncommon',  name:'Uncommon',  w:20, mult:1.5},
+  {key:'rare',      name:'Rare',      w:8,  mult:2.5},
+  {key:'legendary', name:'Legendary', w:2,  mult:5},
+];
+const XP_NEXT = lv => lv * 100;
+
+const QUESTS = [
+  { id:'q_first',  name:'First Steps on the Trail', desc:'Log your first specimen.', target:1,
+    prog:s=>Math.min(s.stats.finds,1), reward:{points:2}, rtext:'+2 stat points' },
+  { id:'q_five',   name:'Handful of the Wild',      desc:'Log 5 specimens.', target:5,
+    prog:s=>Math.min(s.stats.finds,5), reward:{points:2}, rtext:'+2 stat points' },
+  { id:'q_ten',    name:'Seasoned Forager',         desc:'Log 10 specimens.', target:10,
+    prog:s=>Math.min(s.stats.finds,10), reward:{points:3}, rtext:'+3 stat points' },
+  { id:'q_all5',   name:'Five-Fold Attunement',     desc:'Log at least one specimen of each element.', target:5,
+    prog:s=>EL_KEYS.filter(k=>s.finds.some(f=>f.el===k)).length, reward:{points:3}, rtext:'+3 stat points' },
+  { id:'q_rare',   name:'Omen in the Undergrowth',  desc:'Find a Rare (or better) specimen.', target:1,
+    prog:s=>Math.min(s.finds.filter(f=>f.rarity==='rare'||f.rarity==='legendary').length,1), reward:{points:2}, rtext:'+2 stat points' },
+  { id:'q_shutter',name:'Eye of the Naturalist',    desc:'Log 5 specimens with the camera.', target:5,
+    prog:s=>Math.min(s.stats.camFinds,5), reward:{points:2}, rtext:'+2 stat points' },
+  { id:'q_shutter10', name:'Master Lens',           desc:'Log 10 specimens with the camera.', target:10,
+    prog:s=>Math.min(s.stats.camFinds,10), reward:{points:3}, rtext:'+3 stat points' },
+  { id:'q_apex',   name:'Apex Attunement',          desc:'Reach element level 7 (Tier III gear) in any element.', target:7,
+    prog:s=>Math.max(...EL_KEYS.map(k=>s.elements[k].level)), reward:{points:3}, rtext:'+3 stat points' },
+];
+
+/* ---------------- State & Persistence ---------------- */
+const SAVE_KEY = 'verdantKnightSave_v1';
+let S = null;
+let draft = null;
+
+function freshState(d){
+  const els = {}; const alloc = {}; const eq = {};
+  EL_KEYS.forEach(k=>{ els[k]={xp:0,level:1}; alloc[k]=0; eq[k]=0; });
+  return {
+    v:1, name:d.name, pronouns:d.pronouns, cls:d.cls,
+    avatar:{ skin:d.skin, hair:d.hair, hairColor:d.hairColor, paint:d.paint },
+    elements:els, alloc:alloc, points:0,
+    equipped:eq, finds:[], questsClaimed:[],
+    muted:false, seenUnlocks:[],
+    stats:{ finds:0, camFinds:0, forages:0 },
+  };
+}
+function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
+function loadSave(){ try{ const r=localStorage.getItem(SAVE_KEY); return r?JSON.parse(r):null; }catch(e){ return null; } }
+
+/* ---------------- Helpers ---------------- */
+const $ = id => document.getElementById(id);
+const rnd = (a,b) => a + Math.random()*(b-a);
+const ri  = (a,b) => Math.floor(rnd(a,b+1));
+const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const esc = s => String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function toast(msg){
+  const t=document.createElement('div'); t.className='toast'; t.innerHTML=msg;
+  $('toastWrap').appendChild(t);
+  setTimeout(()=>t.remove(), 4000);
+}
+
+/* ---------------- Audio Engine ---------------- */
+let AC=null;
+function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return AC; }
+function beep(freq=440,dur=.09,type='square',vol=.12,when=0){
+  if(S&&S.muted) return; const a=ac(); if(!a) return;
+  const o=a.createOscillator(), g=a.createGain();
+  o.type=type; o.frequency.value=freq;
+  g.gain.setValueAtTime(vol, a.currentTime+when);
+  g.gain.exponentialRampToValueAtTime(.001, a.currentTime+when+dur);
+  o.connect(g); g.connect(a.destination);
+  o.start(a.currentTime+when); o.stop(a.currentTime+when+dur+.02);
+}
+const sfx = {
+  click: ()=>beep(520,.06,'square',.08),
+  find:  ()=>{ beep(392,.08,'triangle',.12); beep(523,.1,'triangle',.12,.09); beep(659,.14,'triangle',.12,.18); },
+  rare:  ()=>{ [523,659,784,1046].forEach((f,i)=>beep(f,.12,'triangle',.13,i*.09)); },
+  level: ()=>{ [440,554,659,880,1108].forEach((f,i)=>beep(f,.12,'square',.1,i*.08)); },
+  win:   ()=>{ [523,659,784,1046,1318].forEach((f,i)=>beep(f,.14,'triangle',.12,i*.1)); },
+};
+
+/* ---------------- Stat Calculation ---------------- */
+function statOf(elKey){
+  let v = 10 + (S.elements[elKey].level-1)*3 + S.alloc[elKey];
+  if(CLASSES[S.cls].el===elKey) v += 15;
+  v += TIER_BONUS[S.equipped[elKey]-1]||0;
+  return v;
+}
+function totalLevel(){ return EL_KEYS.reduce((a,k)=>a+S.elements[k].level,0); }
+function unlockedTier(lv){ return lv>=TIER_REQ[2]?3 : lv>=TIER_REQ[1]?2 : lv>=TIER_REQ[0]?1 : 0; }
+function heroTitle(){
+  const tl=totalLevel();
+  if(tl>=40) return 'Verdant Knight-Lord of the Realm';
+  if(tl>=30) return 'Elder Warden of the Wilds';
+  if(tl>=22) return 'Ranger of the Deep Green';
+  if(tl>=15) return 'Sworn Blade of the Grove';
+  if(tl>=10) return 'Trailworn Adventurer';
+  return 'Greenhorn of the Glade';
+}
+
+/* ---------------- Paper-doll Avatar Rendering ---------------- */
+function drawAvatar(cv, av, opts={}){
+  const ctx=cv.getContext('2d'); ctx.clearRect(0,0,24,32);
+  const px=(x,y,w,h,c)=>{ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); };
+  const skin=av.skin, hair=av.hairColor;
+  const eq = opts.equipped || {bark:0,leaf:0,stone:0,bloom:0,fungus:0};
+  const clsColor = opts.clsColor || '#3a5a44';
+
+  if(eq.leaf>=3){ px(6,9,12,19,'#233d22'); px(7,10,10,17,'#2e5230'); px(8,12,1,14,'#4caf50'); px(15,12,1,14,'#4caf50'); px(11,26,2,2,'#7de081'); }
+
+  const legC = eq.bark>=1 ? ['#7a5230','#4e3a26','#2f5d3a'][eq.bark-1] : '#3d4a3a';
+  px(8,21,3,7,legC); px(13,21,3,7,legC);
+  px(8,28,3,3,'#2a1f14'); px(13,28,3,3,'#2a1f14');
+  if(eq.bark>=3){ px(8,21,3,1,'#c9a227'); px(13,21,3,1,'#c9a227'); }
+
+  let torso=clsColor;
+  if(eq.bark===1) torso='#7a5230'; else if(eq.bark===2) torso='#4e3a26'; else if(eq.bark>=3) torso='#2f5d3a';
+  px(7,11,10,10,torso);
+  if(eq.bark===1){ px(8,12,2,8,'#5d3d22'); px(14,12,2,8,'#5d3d22'); px(7,11,10,1,'#8f6538'); }
+  if(eq.bark===2){ px(7,11,10,1,'#8d8d8d'); px(7,20,10,1,'#8d8d8d'); px(11,11,2,10,'#3a2a1a'); }
+  if(eq.bark>=3){ px(7,11,10,1,'#c9a227'); px(7,20,10,1,'#c9a227'); px(11,12,2,7,'#3f7a4c'); px(12,13,1,2,'#f2d060'); }
+  if(eq.bark>=1){ px(6,10,2,3,torso); px(16,10,2,3,torso); if(eq.bark>=3){ px(6,10,2,1,'#f2d060'); px(16,10,2,1,'#f2d060'); } }
+
+  const armC = eq.leaf>=1 ? '#4a7a3d' : skin;
+  px(5,11,2,8,armC); px(17,11,2,8,armC);
+  if(eq.leaf>=1){ px(5,13,2,1,'#2e5230'); px(17,13,2,1,'#2e5230'); px(5,16,2,1,'#2e5230'); px(17,16,2,1,'#2e5230'); }
+  px(5,19,2,2,skin); px(17,19,2,2,skin);
+
+  if(eq.fungus===1){ px(7,19,10,1,'#7fae5a'); px(11,20,2,2,'#a8d488'); }
+  if(eq.fungus>=2){ px(7,19,10,1,'#5d7a4a'); px(11,19,2,1,'#c9a227'); }
+
+  px(8,3,8,8,skin);
+  px(8,10,8,1,'#00000022');
+  px(10,6,1,1,'#141414'); px(13,6,1,1,'#141414');
+  px(11,9,2,1,'#00000033');
+
+  if(av.hair===0){
+    px(8,2,8,2,hair); px(8,3,8,1,hair); px(7,3,1,9,hair); px(16,3,1,9,hair);
+    px(7,12,1,1,'#c9a227'); px(16,12,1,1,'#c9a227');
+  } else if(av.hair===1){
+    px(7,1,10,3,hair); px(7,4,2,4,hair); px(15,4,2,4,hair);
+    px(9,4,1,1,hair); px(12,4,2,1,hair); px(8,8,1,2,hair); px(15,8,1,2,hair);
+  } else if(av.hair===2){
+    px(8,2,8,2,hair); px(8,3,2,1,hair); px(14,3,2,1,hair);
+    px(16,3,2,9,hair); px(16,12,2,2,hair); px(16,7,2,1,'#c9a227');
+  } else {
+    px(8,2,8,1,hair); px(8,3,8,1,hair+'aa');
+  }
+
+  if(av.paint===1){ px(9,7,2,1,'#5d4426'); px(13,7,2,1,'#5d4426'); px(12,5,1,2,'#5d4426'); }
+  if(av.paint===2){ px(10,4,1,3,'#2e7d32'); px(13,4,1,3,'#2e7d32'); px(11,3,2,1,'#4caf50'); }
+  if(av.paint===3){ px(9,5,1,3,'#b9b3a8'); px(14,5,1,3,'#b9b3a8'); px(11,4,2,1,'#8f8a7e'); }
+
+  if(eq.bloom===1){ px(11,11,2,1,'#e8d44d'); px(12,12,1,1,'#e8d44d'); }
+  if(eq.bloom===2){ px(11,11,2,1,'#e8a33d'); px(11,12,2,1,'#f2d060'); }
+  if(eq.bloom>=3){ px(8,4,8,1,'#c9a227'); px(11,3,2,2,'#e06ba7'); px(12,4,1,1,'#fff'); }
+
+  if(eq.leaf===2){ px(7,2,10,1,'#3d5a2e'); px(7,3,1,8,'#3d5a2e'); px(16,3,1,8,'#3d5a2e'); px(7,11,2,2,'#3d5a2e'); px(15,11,2,2,'#3d5a2e'); }
+  if(eq.leaf>=3){ px(7,2,10,1,'#2e5230'); px(7,3,1,8,'#2e5230'); px(16,3,1,8,'#2e5230'); px(6,10,2,2,'#4caf50'); px(16,10,2,2,'#4caf50'); }
+
+  if(eq.stone===1){ px(19,13,1,3,'#b9c2c9'); px(20,13,1,2,'#dfe6ea'); px(19,16,1,2,'#5d4426'); }
+  if(eq.stone===2){ px(19,11,1,6,'#5d4426'); px(18,8,3,3,'#6e777f'); px(19,9,1,1,'#9aa3ad'); }
+  if(eq.stone>=3){ px(19,4,2,11,'#c7d2da'); px(20,4,1,11,'#eef4f8'); px(19,3,2,1,'#c9a227'); px(17,15,5,1,'#c9a227'); px(19,16,1,3,'#5d4426'); px(19,19,1,1,'#c9a227'); }
+
+  if(eq.fungus===2){ px(2,12,3,7,'#5d7a4a'); px(3,13,1,5,'#7fa065'); px(2,12,3,1,'#3d5232'); }
+  if(eq.fungus>=3){ px(1,10,4,10,'#6f8f5a'); px(2,11,2,8,'#8fbf6f'); px(1,10,4,1,'#c9a227'); px(2,13,1,1,'#f2d060'); px(3,16,1,1,'#f2d060'); px(1,19,4,1,'#3d5232'); }
+}
+
+/* ---------------- Particle System ---------------- */
+const fxCv=$('fx'), fxCtx=fxCv.getContext('2d');
+let fxParts=[];
+function fxResize(){ fxCv.width=innerWidth; fxCv.height=innerHeight; }
+addEventListener('resize', fxResize); fxResize();
+function burst(x,y,colors,n=40,spread=6){
+  for(let i=0;i<n;i++){
+    const a=rnd(0,Math.PI*2), sp=rnd(1,spread);
+    fxParts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2,life:rnd(30,70),max:70,c:pick(colors),s:rnd(2,5)});
+  }
+}
+(function fxLoop(){
+  fxCtx.clearRect(0,0,fxCv.width,fxCv.height);
+  fxParts=fxParts.filter(p=>p.life>0);
+  for(const p of fxParts){
+    p.x+=p.vx; p.y+=p.vy; p.vy+=.12; p.life--;
+    fxCtx.globalAlpha=Math.max(0,p.life/p.max);
+    fxCtx.fillStyle=p.c; fxCtx.fillRect(p.x,p.y,p.s,p.s);
+  }
+  fxCtx.globalAlpha=1;
+  requestAnimationFrame(fxLoop);
+})();
+function burstAtEl(el,colors,n=40){ const r=el.getBoundingClientRect(); burst(r.left+r.width/2, r.top+r.height/2, colors, n); }
+
+/* ---------------- Screen Navigation ---------------- */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
+  $(id).classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+let curTab='trail';
+function showTab(t){
+  curTab=t;
+  document.querySelectorAll('#tabnav button').forEach(b=>b.classList.toggle('sel', b.dataset.tab===t));
+  document.querySelectorAll('.tab-page').forEach(p=>p.classList.add('hidden'));
+  $('tab-'+t).classList.remove('hidden');
+  renderTab(t);
+}
+document.querySelectorAll('#tabnav button').forEach(b=>b.addEventListener('click',()=>{ sfx.click(); showTab(b.dataset.tab); }));
+
+/* ---------------- Title Leaves ---------------- */
+(function(){
+  const wrap=$('titleLeaves'); const glyphs=['🍃','🍂','🌿','✦'];
+  for(let i=0;i<14;i++){
+    const l=document.createElement('span'); l.className='leaf'; l.textContent=pick(glyphs);
+    l.style.left=rnd(0,100)+'vw'; l.style.animationDuration=rnd(6,14)+'s';
+    l.style.animationDelay=-rnd(0,14)+'s'; l.style.fontSize=rnd(12,24)+'px';
+    wrap.appendChild(l);
+  }
+})();
+
+/* ---------------- Character Creation ---------------- */
+function initCreate(){
+  draft={ name:'', pronouns:'They/Them', cls:'oak', skin:SKINS[2], hair:1, hairColor:HAIRCOL[1], paint:0 };
+  const cg=$('classGrid'); cg.innerHTML='';
+  Object.values(CLASSES).forEach(c=>{
+    const b=document.createElement('button'); b.className='class-card'+(draft.cls===c.key?' sel':'');
+    b.style.borderTopColor=c.color; b.dataset.cls=c.key;
+    b.innerHTML=`<div class="cname" style="color:${c.color}">${c.name}</div>
+      <div class="cbonus">+15 ${ELEMENTS[c.el].stat} · ${c.item}</div>
+      <div class="cdesc">${c.desc}</div>`;
+    b.addEventListener('click',()=>{ draft.cls=c.key; sfx.click();
+      cg.querySelectorAll('.class-card').forEach(x=>x.classList.toggle('sel',x.dataset.cls===c.key)); refreshDraftAvatar(); });
+    cg.appendChild(b);
+  });
+  $('pronounRow').querySelectorAll('.pill').forEach(p=>{
+    p.classList.toggle('sel', p.dataset.p===draft.pronouns);
+    p.onclick=()=>{ draft.pronouns=p.dataset.p; sfx.click();
+      $('pronounRow').querySelectorAll('.pill').forEach(x=>x.classList.toggle('sel',x===p)); };
+  });
+  buildSwatches($('skinRow'), SKINS, (c,i)=>{draft.skin=c; refreshDraftAvatar();}, SKINS.indexOf(draft.skin), c=>`background:${c}`);
+  buildSwatches($('hairRow'), HAIRS, (c,i)=>{draft.hair=i; refreshDraftAvatar();}, draft.hair, null, true);
+  buildSwatches($('hairColorRow'), HAIRCOL, (c,i)=>{draft.hairColor=c; refreshDraftAvatar();}, HAIRCOL.indexOf(draft.hairColor), c=>`background:${c}`);
+  buildSwatches($('paintRow'), PAINTS, (c,i)=>{draft.paint=i; refreshDraftAvatar();}, draft.paint, null, true);$('inpName').value = draft.name;
+  refreshDraftAvatar();
+}
+function buildSwatches(row, items, cb, selIdx, styleFn, isText){
+  row.innerHTML='';
+  items.forEach((it,i)=>{
+    const b=document.createElement('button'); b.className='sw'+(isText?' txt':'')+(i===selIdx?' sel':'');
+    if(isText) b.textContent=it; else b.setAttribute('style', styleFn(it));
+    b.addEventListener('click',()=>{ sfx.click(); row.querySelectorAll('.sw').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); cb(it,i); });
+    row.appendChild(b);
+  });
+}
+function refreshDraftAvatar(){
+  drawAvatar($('createAvatar'), draft, { equipped:{bark:0,leaf:0,stone:0,bloom:0,fungus:0}, clsColor:CLASSES[draft.cls].color });
+}
+$('inpName').addEventListener('input', e=>{ draft.name=e.target.value; });
+
+$('btnBegin').addEventListener('click', ()=>{
+  const name=(draft.name||'').trim();
+  if(!name){ toast('⚠ The trees demand a name. Enter one.'); $('inpName').focus(); return; }
+  S=freshState({...draft, name});
+  save(); sfx.win();
+  show('scr-game'); enterGame();
+  toast(`🌿 Welcome to the Realm, <b>${esc(S.name)}</b> the ${CLASSES[S.cls].name}!`);
+  setTimeout(()=>toast(`🎁 Starting relic: <b>${CLASSES[S.cls].item}</b>`), 900);
+});
+
+$('btnBackTitle').addEventListener('click', ()=>{ sfx.click(); show('scr-title'); syncTitleButtons(); });
+
+function syncTitleButtons(){ $('btnContinue').disabled = !loadSave(); }$('btnNew').addEventListener('click', ()=>{
+  sfx.click();
+  if(loadSave() && !confirm('A chronicle already exists. Begin anew and overwrite it?')) return;
+  initCreate(); show('scr-create');
+});
+$('btnContinue').addEventListener('click', ()=>{
+  const s=loadSave(); if(!s) return;
+  S=s; sfx.click(); show('scr-game'); enterGame();
+});
+
+/* ---------------- Render Views ---------------- */
+function enterGame(){ renderHeader(); showTab('trail'); renderAll(); }
+function renderAll(){ renderHeader(); renderElBars(); renderHero(); renderGear(); renderCodex(); renderQuests(); }
+function renderTab(t){
+  ({trail:()=>{renderElBars();}, hero:renderHero, gear:renderGear, codex:renderCodex, quests:renderQuests}[t]||(()=>{}))();
+}
+function avatarOpts(){ return { equipped:S.equipped, clsColor:CLASSES[S.cls].color }; }
+function renderHeader(){
+  $('headName').textContent=S.name;
+  $('headClass').textContent=`${CLASSES[S.cls].name} · ${S.pronouns}`;
+  $('headLevel').textContent=`${heroTitle()} · Realm Lv ${totalLevel()}`;
+  $('btnMute').textContent=S.muted?'🔇':'🔊';
+  drawAvatar($('headAvatar'), S.avatar, avatarOpts());
+}
+$('btnMute').addEventListener('click', ()=>{ S.muted=!S.muted; save(); renderHeader(); if(!S.muted) sfx.click(); });$('btnReset').addEventListener('click', ()=>{
+  if(!confirm('Burn this chronicle and return to the title? This cannot be undone.')) return;
+  localStorage.removeItem(SAVE_KEY); S=null; location.reload();
+});
+
+function renderElBars(){
+  const wrap=$('elBars'); wrap.innerHTML='';
+  EL_KEYS.forEach(k=>{
+    const e=ELEMENTS[k], st=S.elements[k], next=XP_NEXT(st.level);
+    const pct=clamp(st.xp/next*100,0,100);
+    const row=document.createElement('div'); row.className='el-bar';
+    row.innerHTML=`<div class="ic" style="background:${e.color}22;border-color:${e.color}66">${e.icon}</div>
+      <div><div style="display:flex;justify-content:space-between;color:${e.color};font-weight:bold;">
+        <span>${e.name}</span><span>Lv ${st.level}</span></div>
+        <div class="bar" style="--c:${e.color}"><i style="width:${pct}%"></i></div></div>
+      <div style="color:var(--ink-dim);text-align:right;">${st.xp}/${next}<br>XP</div>`;
+    wrap.appendChild(row);
+  });
+}
+
+function renderHero(){
+  $('heroName').textContent=S.name;
+  $('heroTitle').textContent=heroTitle();
+  const c=CLASSES[S.cls];
+  $('heroMeta').innerHTML=`${c.name} · ${S.pronouns} · Relic: <b style="color:var(--gold-hi)">${c.item}</b><br>`+
+    `Specimens: ${S.stats.finds} · Realm Lv ${totalLevel()}`;
+  drawAvatar($('heroAvatar'), S.avatar, avatarOpts());$('allocBadge').textContent=S.points>0?`(${S.points})`:'';
+  $('btnAlloc').disabled=S.points<=0;
+
+  const g=$('statGrid'); g.innerHTML='';
+  EL_KEYS.forEach(k=>{
+    const e=ELEMENTS[k], st=S.elements[k];
+    const row=document.createElement('div'); row.className='stat-row';
+    row.innerHTML=`<div class="ic" style="width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:${e.color}22;border:2px solid ${e.color}66">${e.icon}</div>
+      <div><b style="color:${e.color}">${e.stat}</b> <span class="sub">· ${e.name} · Lv ${st.level}${CLASSES[S.cls].el===k?' · <span style="color:var(--gold-hi)">class +15</span>':''}</span></div>
+      <div class="v">${statOf(k)}</div>`;
+    g.appendChild(row);
+  });
+
+  const deeds=[];
+  if(S.stats.finds>0) deeds.push(`🌿 First specimen logged — the Realm noticed.`);
+  if(S.stats.finds>=10) deeds.push(`📖 ${S.stats.finds} specimens chronicled.`);
+  if(S.equipped && EL_KEYS.some(k=>S.equipped[k]>=3)) deeds.push(`👑 Bearer of Tier III relic-gear.`);
+  if(totalLevel()>=25) deeds.push(`🌲 The Old Grove whispers your name.`);
+  $('deedList').innerHTML = deeds.length? deeds.map(d=>`<div>${d}</div>`).join('') : '<div>No deeds yet. The trail awaits.</div>';
+}
+$('btnAlloc').addEventListener('click', ()=>{ if(S.points>0) openAllocModal(); });
+
+let allocTmp=null;
+function openAllocModal(){
+  allocTmp={ pts:S.points, add:{bark:0,leaf:0,stone:0,bloom:0,fungus:0} };
+  renderAllocModal(); openModal();
+}
+function renderAllocModal(){
+  const box=$('modalBox');
+  let rows=EL_KEYS.map(k=>{
+    const e=ELEMENTS[k];
+    return `<div class="stat-row">
+      <div style="width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:${e.color}22;border:2px solid ${e.color}66">${e.icon}</div>
+      <div><b style="color:${e.color}">${e.stat}</b> <span class="sub">now ${statOf(k)+allocTmp.add[k]}${allocTmp.add[k]?` <span style="color:var(--green-hi)">(+${allocTmp.add[k]})</span>`:''}</span></div>
+      <div class="alloc-btns"><button data-k="${k}" data-d="-1" ${allocTmp.add[k]<=0?'disabled':''}>−</button><button data-k="${k}" data-d="1" ${allocTmp.pts<=0?'disabled':''}>+</button></div>
+    </div>`;
+  }).join('');
+  box.innerHTML=`<h2 class="rune-title" style="font-size:1.1rem;">✦ LEVEL UP — Allocate Points</h2>
+    <p style="color:var(--ink-dim);font-size:.78rem;margin:8px 0 12px;">The Realm grants you <b style="color:var(--gold-hi)">${allocTmp.pts}</b> point${allocTmp.pts===1?'':'s'}. Spend them among the five elements.</p>
+    <div class="stat-grid">${rows}</div>
+    <button class="btn green block" id="btnAllocDone" style="margin-top:14px;">Confirm</button>`;
+  box.querySelectorAll('.alloc-btns button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const k=b.dataset.k, d=+b.dataset.d;
+      if(d>0 && allocTmp.pts>0){ allocTmp.add[k]++; allocTmp.pts--; }
+      if(d<0 && allocTmp.add[k]>0){ allocTmp.add[k]--; allocTmp.pts++; }
+      sfx.click(); renderAllocModal();
+    });
+  });
+  $('btnAllocDone').addEventListener('click', ()=>{
+    EL_KEYS.forEach(k=>{ S.alloc[k]+=allocTmp.add[k]; });
+    S.points=allocTmp.pts;
+    save(); closeModal(); sfx.level(); renderAll();
+  });
+}
+
+function renderGear(){
+  const wrap=$('gearList'); wrap.innerHTML='';
+  EL_KEYS.forEach(k=>{
+    const e=ELEMENTS[k], st=S.elements[k], maxT=unlockedTier(st.level);
+    const row=document.createElement('div'); row.className='gear-row';
+    row.innerHTML=`<h4><span style="color:${e.color}">${e.icon} ${e.name} <span style="color:var(--ink-dim);font-size:.7rem;">· ${e.stat}</span></span><span style="color:var(--ink-dim);font-size:.7rem;">Lv ${st.level}</span></h4>`;
+    const tg=document.createElement('div'); tg.className='tier-grid';
+    for(let t=1;t<=3;t++){
+      const un=maxT>=t, eqd=S.equipped[k]===t;
+      const d=document.createElement('button');
+      d.className='tier'+(un?' unlocked':'')+(eqd?' equipped':'');
+      d.innerHTML=`<span class="gi">${e.gicon[t-1]}</span><span>${e.gear[t-1]}</span>
+        ${un?`<span style="color:var(--gold-hi);font-size:.62rem;">+${TIER_BONUS[t-1]} ${e.stat}${eqd?' · WORN':''}</span>`:`<span class="lock">🔒 Lv ${TIER_REQ[t-1]}</span>`}`;
+      if(un) d.addEventListener('click', ()=>{
+        S.equipped[k]=(S.equipped[k]===t)?0:t;
+        sfx.click(); save(); renderGear(); renderHeader(); renderHero();
+        burstAtEl(d,[e.color,'#f2d060'],18);
+      });
+      tg.appendChild(d);
+    }
+    row.appendChild(tg); wrap.appendChild(row);
+  });
+}
+
+function renderCodex(){
+  const g=$('codexGrid'); g.innerHTML='';$('codexEmpty').style.display = S.finds.length? 'none':'block';
+  $('codexCount').textContent = `${S.finds.length} specimen${S.finds.length===1?'':'s'} chronicled · ${S.stats.camFinds} by lens, ${S.stats.forages} by hand`;
+  [...S.finds].reverse().forEach(f=>{
+    const e=ELEMENTS[f.el];
+    const c=document.createElement('div'); c.className='codex-card rar-'+f.rarity;
+    c.innerHTML=`${f.thumb?`<img src="${f.thumb}" alt="">`:`<div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:2rem;background:${e.color}18">${e.icon}</div>`}
+      <div class="cc-body"><div class="cc-name">${esc(f.name)}</div>
+      <div class="rarity rar-${f.rarity}">${RARITY.find(r=>r.key===f.rarity).name}</div>
+      <div style="color:${e.color};margin-top:2px;">${e.icon} +${f.xp} ${e.stat} XP</div>
+      <div style="color:#5a6a5e;margin-top:2px;">${f.date}</div></div>`;
+    g.appendChild(c);
+  });
+}
+
+function renderQuests(){
+  const wrap=$('questList'); wrap.innerHTML='';
+  QUESTS.forEach(q=>{
+    const p=q.prog(S), done=p>=q.target, claimed=S.questsClaimed.includes(q.id);
+    const d=document.createElement('div'); d.className='quest'+(done?' done':'')+(claimed?' claimed':'');
+    d.innerHTML=`<div style="font-size:1.3rem;">${claimed?'✅':done?'❗':'🕸'}</div>
+      <div class="q-body"><div class="q-name">${q.name}</div><div class="q-desc">${q.desc}</div>
+      <div class="bar" style="--c:var(--gold)"><i style="width:${clamp(p/q.target*100,0,100)}%"></i></div>
+      <div style="font-size:.64rem;color:var(--ink-dim);margin-top:3px;">${p}/${q.target} · Reward: ${q.rtext}</div></div>`;
+    if(done && !claimed){
+      const b=document.createElement('button'); b.className='btn small green'; b.textContent='Claim';
+      b.addEventListener('click', ()=>{
+        S.questsClaimed.push(q.id); S.points+=q.reward.points||0;
+        save(); sfx.win(); burstAtEl(b,['#f2d060','#7de081'],36);
+        toast(`📜 Quest complete: <b>${q.name}</b> — ${q.rtext}!`);
+        renderQuests(); renderHero();
+      });
+      d.appendChild(b);
+    }
+    wrap.appendChild(d);
+  });
+}
+
+/* ---------------- Modal Helpers ---------------- */
+function openModal(){ $('modalWrap').classList.remove('hidden'); }
+function closeModal(){ $('modalWrap').classList.add('hidden'); $('modalBox').innerHTML=''; }$('modalWrap').addEventListener('click', e=>{ if(e.target===$('modalWrap') && !$('modalBox').dataset.locked) closeModal(); });
+
+/* ---------------- Progression Engine ---------------- */
+let pendingLevelUps=0;
+function addXP(elKey, amt){
+  const st=S.elements[elKey];
+  st.xp+=amt;
+  let leveled=false;
+  while(st.xp >= XP_NEXT(st.level)){
+    st.xp -= XP_NEXT(st.level);
+    st.level++; leveled=true; pendingLevelUps++;
+    S.points+=2;
+  }
+  if(leveled){
+    sfx.level();
+    const e=ELEMENTS[elKey];
+    burst(innerWidth/2, innerHeight/2, [e.color,'#f2d060','#7de081','#ffffff'], 90, 8);
+    toast(`⬆ <b>${e.name}</b> reached <b>Level ${st.level}</b>! +2 stat points`);
+    const maxT=unlockedTier(st.level);
+    const key=elKey+':'+maxT;
+    if(maxT>0 && !S.seenUnlocks.includes(key)){
+      S.seenUnlocks.push(key);
+      if(S.equipped[elKey] < maxT) S.equipped[elKey]=maxT;
+      setTimeout(()=>toast(`🛡 TIER ${['I','II','III'][maxT-1]} UNLOCKED: <b>${e.gear[maxT-1]}</b>!`), 1200);
+    }
+  }
+  save();
+}
+function maybeOpenAlloc(){
+  if(pendingLevelUps>0 && S.points>0 && $('modalWrap').classList.contains('hidden')){
+    pendingLevelUps=0; openAllocModal();
+  }
+}
+
+function rollRarity(){
+  const roll=rnd(0,100); let acc=0;
+  for(const r of RARITY){ acc+=r.w; if(roll<acc) return r; }
+  return RARITY[0];
+}
+function makeSpecimen(elKey, rarity){
+  const e=ELEMENTS[elKey];
+  const name = rarity.key==='legendary' ? e.legend : `${pick(e.pre)} ${pick(e.suf)}`;
+  const xp = Math.round((30+ri(0,15)) * rarity.mult);
+  return { name, xp };
+}
+
+/* ---------------- AI Classification & Fallback ---------------- */
+function classifyPixelsFallback(data){
+  const score={bark:0,leaf:0,stone:0,bloom:0,fungus:0};
+  for(let i=0;i<data.length;i+=4){
+    const r=data[i]/255, g=data[i+1]/255, b=data[i+2]/255;
+    const mx=Math.max(r,g,b), mn=Math.min(r,g,b), d=mx-mn;
+    const v=mx, s=mx===0?0:d/mx;
+    let h=0;
+    if(d>0){
+      if(mx===r) h=((g-b)/d)%6; else if(mx===g) h=(b-r)/d+2; else h=(r-g)/d+4;
+      h*=60; if(h<0) h+=360;
+    }
+    if(v<0.12){ score.bark+=0.5; continue; }
+    if(s<0.14){ score.stone+= v>0.75 ? 1 : 0.7; continue; }
+    if(h>=60 && h<=170){
+      if(s>0.5 && v>0.4) score.leaf+=1; else score.fungus+=0.85;
+    } else if(h>170 && h<=260){ score.bloom+=0.7; }
+    else if(h>260 && h<=340){ score.bloom+=1; }
+    else if(h>340 || h<=12){ score.bloom+=1; }
+    else if(h>12 && h<=32){
+      if(v>0.55 && s>0.55) score.fungus+=0.7; else score.bark+=1;
+    } else if(h>32 && h<=45){ score.bark+= v>0.6? 0.6 : 1; }
+    else { score.bloom+=0.8; }
+  }
+  let best=null, bestV=-1;
+  for(const k of EL_KEYS){ const jitter=rnd(0,0.999); if(score[k]+jitter*0.01>bestV){ bestV=score[k]+jitter*0.01; best=k; } }
+  return best;
+}
+
+function mapLabelToElement(label){
+  const l = label.toLowerCase();
+  if (l.match(/wood|tree|trunk|bark|timber|log|branch|chestnut|acorn/)) return 'bark';
+  if (l.match(/leaf|foliage|plant|fern|grass|herb|clover|ivy|needle|moss/)) return 'leaf';
+  if (l.match(/stone|rock|pebble|mineral|boulder|cliff|sand|slate|granite|flint/)) return 'stone';
+  if (l.match(/flower|petal|bloom|blossom|rose|daisy|dandelion|sunflower|poppy|tulip|orchid|berry/)) return 'bloom';
+  if (l.match(/mushroom|fungus|fungi|bolete|agaric|lichen|spore/)) return 'fungus';
+  return null;
+}
+
+async function classifySpecimenImage(canvas, dataUrl) {
+  if (aiClassifier) {
+    try {
+      const results = await aiClassifier(dataUrl, { topk: 5 });
+      for (const res of results) {
+        const mapped = mapLabelToElement(res.label);
+        if (mapped) {
+          console.log(`Open AI Classification: ${res.label} -> ${mapped} (${(res.score*100).toFixed(1)}%)`);
+          return mapped;
+        }
+      }
+    } catch (err) {
+      console.warn('AI inference pass failed, using fallback:', err);
+    }
+  }
+  const data = canvas.getContext('2d').getImageData(0,0,48,48).data;
+  return classifyPixelsFallback(data);
+}
+
+/* ---------------- Trail Harvest Logic ---------------- */
+$('harvestBtn').addEventListener('click', ()=>{ sfx.click(); $('fileInput').click(); });$('fileInput').addEventListener('change', e=>{
+  const f=e.target.files && e.target.files[0];
+  e.target.value='';
+  if(!f) return;
+
+  if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const img=new Image();
+    img.onload=async ()=>{
+      const tc=document.createElement('canvas'); tc.width=tc.height=48;
+      const tctx=tc.getContext('2d');
+      const side=Math.min(img.width,img.height);
+      tctx.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,0,0,48,48);
+      let thumb=null; try{ thumb=tc.toDataURL('image/jpeg',0.6); }catch(err){}
+
+      runScan(async ()=>{
+        const elKey = await classifySpecimenImage(tc, rd.result);
+        completeFind(elKey, thumb, true);
+      });
+    };
+    img.onerror=()=>toast('⚠ The Realm could not read that image.');
+    img.src=rd.result;
+  };
+  rd.readAsDataURL(f);
+});
+
+$('btnForage').addEventListener('click', ()=>{
+  sfx.click();
+  const elKey=pick(EL_KEYS);
+  runScan(()=>completeFind(elKey, null, false));
+});
+
+function runScan(cb){
+  $('scanZone').classList.remove('hidden');$('harvestBtn').disabled=true;
+  let dots=0;
+  const iv=setInterval(()=>{ dots=(dots+1)%4; $('scanDots').textContent='…'.slice(0,1+dots); }, 240);
+  [392,440,494,587].forEach((f,i)=>beep(f,.07,'triangle',.07,i*.22));
+  setTimeout(async ()=>{
+    clearInterval(iv);
+    $('scanZone').classList.add('hidden');$('harvestBtn').disabled=false;
+    await cb();
+  }, 1100);
+}
+
+function completeFind(elKey, thumb, byCamera){
+  const rarity=rollRarity();
+  const spec=makeSpecimen(elKey, rarity);
+  const e=ELEMENTS[elKey];
+  S.finds.push({ el:elKey, name:spec.name, rarity:rarity.key, xp:spec.xp, thumb,
+    date:new Date().toLocaleDateString(undefined,{month:'short',day:'numeric'}) });
+  S.stats.finds++;
+  if(byCamera) S.stats.camFinds++; else S.stats.forages++;
+  if(rarity.key==='legendary'||rarity.key==='rare') sfx.rare(); else sfx.find();
+  addXP(elKey, spec.xp);
+  save();
+  showFindCard(elKey, spec, rarity, thumb, byCamera);
+  renderAll();
+}
+
+function showFindCard(elKey, spec, rarity, thumb, byCamera){
+  const e=ELEMENTS[elKey];
+  const box=$('modalBox');
+  box.dataset.locked='1';
+  box.innerHTML=`<div class="find-card">
+    <div class="rarity rar-${rarity.key}">${rarity.name} Specimen</div>
+    <h2 class="rune-title" style="font-size:1.25rem;margin:6px 0;">${esc(spec.name)}</h2>
+    ${thumb?`<img class="find-thumb" src="${thumb}" alt="specimen photo">`:`<div style="font-size:3.4rem;margin:10px 0;">${e.icon}</div>`}
+    <div style="font-size:.8rem;color:${e.color};font-weight:bold;">${e.icon} ${e.name} — +${spec.xp} ${e.stat} XP</div>
+    <div style="font-size:.68rem;color:var(--ink-dim);margin:8px 0 14px;">${byCamera?'Analyzed by open-weight vision model beneath open sky.':'Gathered by hand along the trail.'}</div>
+    <button class="btn green block" id="btnFindOk">Add to Codex</button>
+  </div>`;
+  openModal();
+  const mc=$('modalBox').getBoundingClientRect();
+  burst(mc.left+mc.width/2, mc.top+mc.height/2, [e.color,'#f2d060','#ffffff'], rarity.key==='legendary'?90:40, 7);
+  $('btnFindOk').addEventListener('click', ()=>{
+    sfx.click(); delete box.dataset.locked; closeModal();
+    setTimeout(maybeOpenAlloc, 250);
+  });
+}
+
+/* ---------------- Boot ---------------- */
+(function boot(){
+  syncTitleButtons();
+  const cv=$('titleEmblem'), ctx=cv.getContext('2d');
+  const px=(x,y,w,h,c)=>{ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); };
+  px(8,4,8,4,'#2f5d3a'); px(7,8,10,8,'#3f7a4c'); px(6,10,12,6,'#2f5d3a');
+  px(9,10,6,2,'#08120c'); px(11,10,2,2,'#f2d060');
+  px(11,4,2,10,'#c9a227'); px(7,16,10,2,'#c9a227');
+  px(10,18,4,3,'#2f5d3a'); px(4,8,2,4,'#4caf50'); px(18,8,2,4,'#4caf50');
+  px(4,6,1,2,'#7de081'); px(19,6,1,2,'#7de081');
+  show('scr-title');
+})();
+</script>
+</body>
+</html>
