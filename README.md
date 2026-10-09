@@ -1,25 +1,20 @@
-Here is the updated `README.md` configured to link directly to your local `docs/media/field-demo.mp4` file instead of YouTube:
 
-```markdown
 # 🌿 The Verdant Knight: Chronicles of the Realm
 
 > An offline-first naturalist RPG powered by on-device open-weight AI (WebGPU).  
 > Built for the **Hacktoberfest Open-Source AI Challenge — Week 1: "Touch Grass"**.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Transformers.js](https://img.shields.io/badge/Powered%20By-Transformers.js%20v3-green.svg)](https://github.com/huggingface/transformers.js)
-[![WebGPU](https://img.shields.io/badge/Inference-WebGPU%20%2F%20WASM-blue.svg)](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API)
-[![Touch Grass](https://img.shields.io/badge/Hacktoberfest-Touch%20Grass-brightgreen.svg)](https://dev.to/challenges/hacktoberfest-week1-2026-10-05)
+---
+
+![The Verdant Knight Gameplay Preview](screenshot.png)
+
+<video src="field-demo.mp4" controls="controls" width="100%"></video>
 
 ---
 
-## 🎬 Demo & Downloads
+## 🎬 Demo
 
-* **Live Demo:** [Play The Verdant Knight](https://tahaenasraoui-debug.github.io/The-Verdant-Knight-Chronicles-of-the-Realm/)
-* **Android APK:** The installable APK package is available in the GitHub Packages / Releases section: [Download APK Package](https://github.com/tahaenasraoui-debug/The-Verdant-Knight-Chronicles-of-the-Realm/releases/latest)
-* **Field Test Video:** [Watch / Download Trail Demo (.mp4)](docs/media/field-demo.mp4)
-
-![The Verdant Knight Gameplay Preview](docs/media/screenshot.png)
+* **Live Web App:** [Play The Verdant Knight](https://tahaenasraoui-debug.github.io/The-Verdant-Knight-Chronicles-of-the-Realm/)
 
 ---
 
@@ -35,9 +30,9 @@ Players explore outdoor trails, woodlands, or local parks with minimal screen in
 
 ## 📱 Android Installation
 
-The standalone Android APK is bundled directly in the project packages:
+Download and install the APK directly from GitHub Packages / Releases:
 
-1. Download the `.apk` package from [Releases / Packages](https://github.com/tahaenasraoui-debug/The-Verdant-Knight-Chronicles-of-the-Realm/releases/latest).
+1. Download the `.apk` package from [Releases](https://github.com/tahaenasraoui-debug/The-Verdant-Knight-Chronicles-of-the-Realm/releases/latest).
 2. Open and install the package on your Android device (allow installation from unknown sources if prompted).
 3. Grant camera permissions upon launch.
 4. Open the app once while connected to the internet to cache the model weights (~15 MB). After that, the game functions completely offline.
@@ -103,15 +98,7 @@ cd The-Verdant-Knight-Chronicles-of-the-Realm
 Run a local server with Python:
 
 ```bash
-# Python 3
 python3 -m http.server 8000
-
-```
-
-Or using Node.js / `npx`:
-
-```bash
-npx serve .
 
 ```
 
@@ -144,7 +131,5 @@ http://localhost:8000
 This project is open-source and available under the [MIT License](https://www.google.com/search?q=LICENSE).
 
 ```
-
-Just ensure your video file is committed at `docs/media/field-demo.mp4` (or adjust the path in the link if your file is named differently).
 
 ```
